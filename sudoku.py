@@ -15,24 +15,34 @@ def cross(A, B):
     "Cross product of elements in A and elements in B."
     return [a+b for a in A for b in B]
 
-digits   = '123456789abcdefghijklmnop'
-rows     = 'ABCDEFGHIJKLMNOPQRSTUVWXY'
-cols     = digits
-squares  = cross(rows, cols)
-if(len(squares) == 81):
-    unitlist = ([cross(rows, c) for c in cols] +
-                [cross(r, cols) for r in rows] +
-                [cross(rs, cs) for rs in ('ABC','DEF','GHI') for cs in ('123','456','789')])
+rows9  = '123456789'
+rows16 = '123456789abcde'
+rows25 = '123456789abcdefghijklmnop'
+cols9    = 'ABCDEFGHI'
+cols16   = 'ABCDEFGHIJKLMNOP'
+cols25   = 'ABCDEFGHIJKLMNOPQRSTUVWXY'
 
-else if(len(squares) == 169):
-    unitlist = ([cross(rows, c) for c in cols] +
-                [cross(r, cols) for r in rows] +
+squares9  = cross(rows9, cols9)
+squares16 = cross(rows16, cols16)
+squares25 = cross(rows25, cols25)
+
+if(len(squares9) == 81):
+    unitlist = ([cross(rows9, c) for c in cols9] +
+                [cross(r, cols9) for r in rows9] +
+                [cross(rs, cs) for rs in ('ABC','DEF','GHI') for cs in ('123','456','789')])
+    squares = squares9
+
+if(len(squares16) == 169):
+    unitlist = ([cross(rows16, c) for c in cols16] +
+                [cross(r, cols16) for r in rows16] +
                 [cross(rs, cs) for rs in ('ABCD','EFGH','IJKL','MNOP') for cs in ('1234','5678','9abc','defg')])
+    squares = squares16
                 
-else if(len(squares) == 625):
-    unitlist = ([cross(rows, c) for c in cols] +
-                [cross(r, cols) for r in rows] +
+if(len(squares25) == 625):
+    unitlist = ([cross(rows25, c) for c in cols25] +
+                [cross(r, cols25) for r in rows25] +
                 [cross(rs, cs) for rs in ('ABCDE','FGHIJ','KLMNO','PQRST','UVWXY') for cs in ('12345','6789a','bcdef','ghijk','lmnop')])
+    squares = squares25
                 
 units = dict((s, [u for u in unitlist if s in u])
              for s in squares)
@@ -70,7 +80,7 @@ def parse_grid(grid):
 def grid_values(grid):
     "Convert grid into a dict of {square: char} with '0' or '.' for empties."
     chars = [c for c in grid if c in digits or c in '0.']
-    assert len(chars) == 81 | len(chars) == 169 | len(chars) == 625
+    #assert len(chars) == 81 | len(chars) == 169 | len(chars) == 625
     return dict(zip(squares, chars))
 
 ################ Constraint Propagation ################
@@ -141,11 +151,12 @@ def display(values):
 
 ################ Search ################
 
-def solve(grid): return search(parse_grid(grid))
+def solve(grid): return display(search(parse_grid(grid)))
 
 def search(values):
     "Using depth-first search and propagation, try all possible values."
     if values is False:
+        print "Failed before search"
         return False ## Failed earlier
     if all(len(values[s]) == 1 for s in squares):
         return values ## Solved!
@@ -225,12 +236,12 @@ grid1  = '0030206009003050010018064000081029007000000080067082000026095008002030
 grid2  = '4.....8.5.3..........7......2.....6.....8.4......1.......6.3.7.5..2.....1.4......'
 hard1  = '.....6....59.....82....8....45........3........6..3.54...325..6..................'
     
-if __name__ == '__main__':
-    test()
-    solve_all(from_file("easy50.txt", '========'), "easy", None)
-    solve_all(from_file("top95.txt"), "hard", None)
-    solve_all(from_file("hardest.txt"), "hardest", None)
-    solve_all([random_puzzle() for _ in range(99)], "random", 100.0)
+#if __name__ == '__main__':
+#    test()
+#    solve_all(from_file("easy50.txt", '========'), "easy", None)
+#    solve_all(from_file("top95.txt"), "hard", None)
+#    solve_all(from_file("hardest.txt"), "hardest", None)
+#    solve_all([random_puzzle() for _ in range(99)], "random", 100.0)
 
 ## References used:
 ## http://www.scanraid.com/BasicStrategies.htm
