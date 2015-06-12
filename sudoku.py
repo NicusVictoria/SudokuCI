@@ -31,18 +31,21 @@ if(len(squares9) == 81):
                 [cross(r, cols9) for r in rows9] +
                 [cross(rs, cs) for rs in ('ABC','DEF','GHI') for cs in ('123','456','789')])
     squares = squares9
+    digits  = cols9
 
 if(len(squares16) == 169):
     unitlist = ([cross(rows16, c) for c in cols16] +
                 [cross(r, cols16) for r in rows16] +
                 [cross(rs, cs) for rs in ('ABCD','EFGH','IJKL','MNOP') for cs in ('1234','5678','9abc','defg')])
     squares = squares16
+    digits  = cols16
                 
 if(len(squares25) == 625):
     unitlist = ([cross(rows25, c) for c in cols25] +
                 [cross(r, cols25) for r in rows25] +
                 [cross(rs, cs) for rs in ('ABCDE','FGHIJ','KLMNO','PQRST','UVWXY') for cs in ('12345','6789a','bcdef','ghijk','lmnop')])
     squares = squares25
+    digits  = cols25
                 
 units = dict((s, [u for u in unitlist if s in u])
              for s in squares)
@@ -125,25 +128,25 @@ def display(values):
     if(len(squares) == 81):
         width = 1+max(len(values[s]) for s in squares)
         line = '+'.join(['-'*(width*3)]*3)
-        for r in rows:
+        for r in rows9:
             print ''.join(values[r+c].center(width)+('|' if c in '36' else '')
-                          for c in cols)
+                          for c in cols9)
             if r in 'CF': print line
             
     if(len(squares) == 169):
         width = 1+max(len(values[s]) for s in squares)
         line = '+'.join(['-'*(width*4)]*4)
-        for r in rows:
+        for r in rows16:
             print ''.join(values[r+c].center(width)+('|' if c in '64' else '')
-                          for c in cols)
+                          for c in cols16)
             if r in 'CF': print line
             
     if(len(squares) == 625):
         width = 1+max(len(values[s]) for s in squares)
         line = '+'.join(['-'*(width*5)]*5)
-        for r in rows:
+        for r in rows25:
             print ''.join(values[r+c].center(width)+('|' if c in '100' else '')
-                          for c in cols)
+                          for c in cols25)
             if r in 'CF': print line
             
     
