@@ -15,28 +15,40 @@ def cross(A, B):
     "Cross product of elements in A and elements in B."
     return [a+b for a in A for b in B]
 
-digits   = '123456789abcdefghijklmnop'
-rows     = 'ABCDEFGHIJKLMNOPQRSTUVWXY'
-cols     = digits
-squares  = cross(rows, cols)
+rows9  = '123456789'
+rows16 = '123456789abcde'
+rows25 = '123456789abcdefghijklmnop'
+cols9    = 'ABCDEFGHI'
+cols16   = 'ABCDEFGHIJKLMNOP'
+cols25   = 'ABCDEFGHIJKLMNOPQRSTUVWXY'
+
+squares9  = cross(rows9, cols9)
+squares16 = cross(rows16, cols16)
+squares25 = cross(rows25, cols25)
 if(len(squares) == 81):
 	blocks = [cross(rs, cs) for rs in ('ABC','DEF','GHI') for cs in ('123','456','789')];
     unitlist = ([cross(rows, c) for c in cols] +
                 [cross(r, cols) for r in rows] +
                 blocks)
+	squares = squares9
+    digits  = cols9
 
 else if(len(squares) == 169):
 	blocks = [cross(rs, cs) for rs in ('ABCD','EFGH','IJKL','MNOP') for cs in ('1234','5678','9abc','defg')];
     unitlist = ([cross(rows, c) for c in cols] +
                 [cross(r, cols) for r in rows] +
                 blocks)
-                
+    squares = squares16
+    digits  = cols16 
+          
 else if(len(squares) == 625):
 	blocks = [cross(rs, cs) for rs in ('ABCDE','FGHIJ','KLMNO','PQRST','UVWXY') for cs in ('12345','6789a','bcdef','ghijk','lmnop')];
     unitlist = ([cross(rows, c) for c in cols] +
                 [cross(r, cols) for r in rows] +
                 blocks)
-                
+    squares = squares25
+    digits  = cols25
+
 units = dict((s, [u for u in unitlist if s in u])
              for s in squares)
 peers = dict((s, set(sum(units[s],[]))-set([s]))
@@ -73,7 +85,7 @@ def parse_grid(grid):
 def grid_values(grid):
     "Convert grid into a dict of {square: char} with '0' or '.' for empties."
     chars = [c for c in grid if c in digits or c in '0.']
-    assert len(chars) == 81 | len(chars) == 169 | len(chars) == 625
+    #assert len(chars) == 81 | len(chars) == 169 | len(chars) == 625
     return dict(zip(squares, chars))
 
 ################ Constraint Propagation ################
@@ -118,25 +130,25 @@ def display(values):
     if(len(squares) == 81):
         width = 1+max(len(values[s]) for s in squares)
         line = '+'.join(['-'*(width*3)]*3)
-        for r in rows:
+        for r in rows9:
             print ''.join(values[r+c].center(width)+('|' if c in '36' else '')
-                          for c in cols)
+                          for c in cols9)
             if r in 'CF': print line
             
     if(len(squares) == 169):
         width = 1+max(len(values[s]) for s in squares)
         line = '+'.join(['-'*(width*4)]*4)
-        for r in rows:
+        for r in rows16:
             print ''.join(values[r+c].center(width)+('|' if c in '64' else '')
-                          for c in cols)
+                          for c in cols16)
             if r in 'CF': print line
             
     if(len(squares) == 625):
         width = 1+max(len(values[s]) for s in squares)
         line = '+'.join(['-'*(width*5)]*5)
-        for r in rows:
+        for r in rows25:
             print ''.join(values[r+c].center(width)+('|' if c in '100' else '')
-                          for c in cols)
+                          for c in cols25)
             if r in 'CF': print line
             
     
@@ -144,11 +156,12 @@ def display(values):
 
 ################ Search ################
 
-def solve(grid): return search(parse_grid(grid))
+def solve(grid): return display(search(parse_grid(grid)))
 
 def search(values):
     "Using depth-first search and propagation, try all possible values."
     if values is False:
+        print "Failed before search"
         return False ## Failed earlier
     if all(len(values[s]) == 1 for s in squares):
         return values ## Solved!
@@ -162,18 +175,22 @@ def localSeurch(values):
 def localSeurchStart(values):
 	score = dict((s, 9) for s in rows + cols);
 	score = evaluation(values, score, rows, cols);
-	start = constructBoard(values);
+	board = constructBoard(values);
 
-def wrongValues	(values, oldWrongValues, rowsToCheck, colsToCheck):
-	wrongValues = 
-	for v in values:
-		posible = digits;
-        score[r] += len(posible.replace(values[r+c],'') for c in cols);
+def wrongValues	(values, board, oldWrongValues, rowsToCheck, colsToCheck):
+	wrongValues = oldWrongValues;
+	for r in rowsToCheck:
+		for c in cols
+			s = r+c;
+			if len(values[s]) > 1:
+				if board[s] not in values[s]:
+					wrongValues[s] = board[s];
+				elif board[s] not in values[peer] for peer in peers[s]:
+					wrongValues[s] = board[s];
 	for c in colsToCheck:
-		posible = digits;
-        score[c] += len(posible.replace(values[r+c],'') for r in rows);
-	return score;
-	
+		for r in rows:
+		
+		
 def constructBoard(values):
 	for block in blocks:
 		posible = digits;
