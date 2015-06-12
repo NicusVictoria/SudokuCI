@@ -173,31 +173,39 @@ def search(values):
 def localSeurch(values):
 				
 def localSeurchStart(values):
-	score = dict((s, 9) for s in rows + cols);
-	score = evaluation(values, score, rows, cols);
 	board = constructBoard(values);
+	score = dict((s, 9) for s in rows + cols);#make a dictionary for the score 
+	score = evaluation(board, score, rows, cols);
+	wrongValues = dict((s, '') for s in squares);#make a dictionary for the wrongValues
+	wrongValues = calcWrongValues(values, board, wrongValues, rows, cols);
+	
 
-def wrongValues	(values, board, oldWrongValues, rowsToCheck, colsToCheck):
+def calcWrongValues	(values, board, oldWrongValues, rowsToCheck, colsToCheck):
 	wrongValues = oldWrongValues;
-	for r in rowsToCheck:
+	for r in rowsToCheck: #only check the changed rows and cols
 		for c in cols
+			s = r+c;
+			if len(values[s]) > 1: #if there are no multiple options for a position in cant be wrong
+				if board[s] not in values[s]: #if the value is not in is's possible values in never van be right
+					wrongValues[s] = board[s];
+				elif board[s] not in values[peer] for peer in peers[s]:	#if this value also is in it's peers
+					wrongValues[s] = board[s];
+	for c in colsToCheck:
+		for r in rows:
 			s = r+c;
 			if len(values[s]) > 1:
 				if board[s] not in values[s]:
 					wrongValues[s] = board[s];
 				elif board[s] not in values[peer] for peer in peers[s]:
 					wrongValues[s] = board[s];
-	for c in colsToCheck:
-		for r in rows:
-		
 		
 def constructBoard(values):
 	for block in blocks:
 		posible = digits;
 		toDo = [];
-		for i in range(0, len(block)-1):
+		for i in range(0, len(block)-1): #always place the first of the possible values
 			vield = block[i]:
-			if len(values[vield])>0 :
+			if len(values[vield])>0 : #if there is nothing possible in should be given the rest value
 				value = values[vield][0];	
 				for j in range(i, len(block)-1):
 					values[block[j]] = values[block[j]].replace(value,'');
@@ -210,7 +218,7 @@ def constructBoard(values):
 	return values;		
 	
 def evaluation(values, score, rowsToCheck, colsToCheck):
-	for r in rowsToCheck:
+	for r in rowsToCheck: #check witch number is not there in each row and column and count the length
 		posible = digits;
         score[r] += len(posible.replace(values[r+c],'') for c in cols);
 	for c in colsToCheck:
