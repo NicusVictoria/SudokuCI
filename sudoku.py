@@ -112,12 +112,31 @@ def eliminate(values, s, d):
 
 def display(values):
     "Display these values as a 2-D grid."
-    width = 1+max(len(values[s]) for s in squares)
-    line = '+'.join(['-'*(width*3)]*3)
-    for r in rows:
-        print ''.join(values[r+c].center(width)+('|' if c in '36' else '')
-                      for c in cols)
-        if r in 'CF': print line
+    if(len(squares) == 81):
+        width = 1+max(len(values[s]) for s in squares)
+        line = '+'.join(['-'*(width*3)]*3)
+        for r in rows:
+            print ''.join(values[r+c].center(width)+('|' if c in '36' else '')
+                          for c in cols)
+            if r in 'CF': print line
+            
+    if(len(squares) == 169):
+        width = 1+max(len(values[s]) for s in squares)
+        line = '+'.join(['-'*(width*4)]*4)
+        for r in rows:
+            print ''.join(values[r+c].center(width)+('|' if c in '64' else '')
+                          for c in cols)
+            if r in 'CF': print line
+            
+    if(len(squares) == 625):
+        width = 1+max(len(values[s]) for s in squares)
+        line = '+'.join(['-'*(width*5)]*5)
+        for r in rows:
+            print ''.join(values[r+c].center(width)+('|' if c in '100' else '')
+                          for c in cols)
+            if r in 'CF': print line
+            
+    
     print
 
 ################ Search ################
@@ -191,8 +210,15 @@ def random_puzzle(N=17):
         if not assign(values, s, random.choice(values[s])):
             break
         ds = [values[s] for s in squares if len(values[s]) == 1]
-        if len(ds) >= N and len(set(ds)) >= 8:
+        if len(ds) >= N and len(set(ds)) >= 8 and len(squares) == 81:
             return ''.join(values[s] if len(values[s])==1 else '.' for s in squares)
+            
+        if len(ds) >= N and len(set(ds)) >= 15 and len(squares) == 169:
+            return ''.join(values[s] if len(values[s])==1 else '.' for s in squares)
+            
+        if len(ds) >= N and len(set(ds)) >= 24 and len(squares) == 625:
+            return ''.join(values[s] if len(values[s])==1 else '.' for s in squares)
+            
     return random_puzzle(N) ## Give up and make a new puzzle
 
 grid1  = '003020600900305001001806400008102900700000008006708200002609500800203009005010300'
