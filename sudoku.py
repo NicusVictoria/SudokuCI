@@ -20,19 +20,22 @@ rows     = 'ABCDEFGHIJKLMNOPQRSTUVWXY'
 cols     = digits
 squares  = cross(rows, cols)
 if(len(squares) == 81):
+	blocks = [cross(rs, cs) for rs in ('ABC','DEF','GHI') for cs in ('123','456','789')];
     unitlist = ([cross(rows, c) for c in cols] +
                 [cross(r, cols) for r in rows] +
-                [cross(rs, cs) for rs in ('ABC','DEF','GHI') for cs in ('123','456','789')])
+                blocks)
 
 else if(len(squares) == 169):
+	blocks = [cross(rs, cs) for rs in ('ABCD','EFGH','IJKL','MNOP') for cs in ('1234','5678','9abc','defg')];
     unitlist = ([cross(rows, c) for c in cols] +
                 [cross(r, cols) for r in rows] +
-                [cross(rs, cs) for rs in ('ABCD','EFGH','IJKL','MNOP') for cs in ('1234','5678','9abc','defg')])
+                blocks)
                 
 else if(len(squares) == 625):
+	blocks = [cross(rs, cs) for rs in ('ABCDE','FGHIJ','KLMNO','PQRST','UVWXY') for cs in ('12345','6789a','bcdef','ghijk','lmnop')];
     unitlist = ([cross(rows, c) for c in cols] +
                 [cross(r, cols) for r in rows] +
-                [cross(rs, cs) for rs in ('ABCDE','FGHIJ','KLMNO','PQRST','UVWXY') for cs in ('12345','6789a','bcdef','ghijk','lmnop')])
+                blocks)
                 
 units = dict((s, [u for u in unitlist if s in u])
              for s in squares)
@@ -153,7 +156,55 @@ def search(values):
     n,s = min((len(values[s]), s) for s in squares if len(values[s]) > 1)
     return some(search(assign(values.copy(), s, d))
                 for d in values[s])
+				
+def localSeurch(values):
+				
+def localSeurchStart(values):
+	score = dict((s, 9) for s in rows + cols);
+	score = evaluation(values, score, rows, cols);
+	start = constructBoard(values);
 
+def wrongValues	(values, oldWrongValues, rowsToCheck, colsToCheck):
+	wrongValues = 
+	for v in values:
+		posible = digits;
+        score[r] += len(posible.replace(values[r+c],'') for c in cols);
+	for c in colsToCheck:
+		posible = digits;
+        score[c] += len(posible.replace(values[r+c],'') for r in rows);
+	return score;
+	
+def constructBoard(values):
+	for block in blocks:
+		posible = digits;
+		toDo = [];
+		for i in range(0, len(block)-1):
+			vield = block[i]:
+			if len(values[vield])>0 :
+				value = values[vield][0];	
+				for j in range(i, len(block)-1):
+					values[block[j]] = values[block[j]].replace(value,'');
+				values[vield] = value;
+				posible = posible.replace(values[r+c],'');	
+			else
+				toDo.add(vield)
+		for i in range(0, len(toDo)-1):
+			values[toDo[i]] = possible[i];
+	return values;		
+	
+def evaluation(values, score, rowsToCheck, colsToCheck):
+	for r in rowsToCheck:
+		posible = digits;
+        score[r] += len(posible.replace(values[r+c],'') for c in cols);
+	for c in colsToCheck:
+		posible = digits;
+        score[c] += len(posible.replace(values[r+c],'') for r in rows);
+	return score;	
+
+def scoreTotal(score)
+	return sum(s for s in score);		
+						  
+				
 ################ Utilities ################
 
 def some(seq):
