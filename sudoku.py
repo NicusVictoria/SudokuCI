@@ -170,7 +170,18 @@ def search(values):
     return some(search(assign(values.copy(), s, d))
                 for d in values[s])
 				
-def localSeurch(values):
+def localSeurch(values, board, wrongValues, score, totalScore):
+	newBoard check = seekSwitchBlocks(values, board, wrongValues);
+	rowsToCheck = vield[1] for vield in check;
+	colsToCheck = vield[2] for vield in check;
+	newScore = evaluation(values, score, rowsToCheck, colsToCheck);
+	newTotalScore = scoreTotal(newScore)
+	if newTotalScore = 0:
+		return values ## Solved!
+	if newTotalScore > totalScore:
+		wrongValues = calcWrongValues (values, newBoard, WrongValues, rowsToCheck, colsToCheck);
+		localSeurch(values, newBoard, wrongValues, newScore, newTotalScore);
+		
 				
 def localSeurchStart(values):
 	board = constructBoard(values);
@@ -178,6 +189,7 @@ def localSeurchStart(values):
 	score = evaluation(board, score, rows, cols);
 	wrongValues = dict((s, '') for s in squares);#make a dictionary for the wrongValues
 	wrongValues = calcWrongValues(values, board, wrongValues, rows, cols);
+	localSeurch(values, board, wrongValues, score, scoreTotal(score));
 	
 
 def calcWrongValues	(values, board, oldWrongValues, rowsToCheck, colsToCheck):
@@ -190,6 +202,8 @@ def calcWrongValues	(values, board, oldWrongValues, rowsToCheck, colsToCheck):
 					wrongValues[s] = board[s];
 				elif board[s] not in values[peer] for peer in peers[s]:	#if this value also is in it's peers
 					wrongValues[s] = board[s];
+				else
+					wrongValues[s] = '';
 	for c in colsToCheck:
 		for r in rows:
 			s = r+c;
@@ -198,6 +212,9 @@ def calcWrongValues	(values, board, oldWrongValues, rowsToCheck, colsToCheck):
 					wrongValues[s] = board[s];
 				elif board[s] not in values[peer] for peer in peers[s]:
 					wrongValues[s] = board[s];
+				else
+					wrongValues[s] = '';
+	return wrongValues;					
 		
 def constructBoard(values):
 	for block in blocks:
@@ -227,7 +244,22 @@ def evaluation(values, score, rowsToCheck, colsToCheck):
 	return score;	
 
 def scoreTotal(score)
-	return sum(s for s in score);		
+	return sum(s for s in score);	
+
+def seekSwitchBlocks(values, board, wrongValues)
+	rndblocks = random.shuffle(blocks);
+	for block in rndblocks:
+		rndvields = random.shuffle(block)
+		for vield in rndvields:
+			if wrongValues[vield] != '':
+				for swichVield in rndvields:
+					if swichVield != vield and board[vield] in values[swichVield]:
+					#can be better by checking if also board[swichVield] in values[vield] but then it can hafe no autput
+						board[vield] = board[swichVield];
+						board[swichVield] = wrongValues[vield];
+						break;
+	return board, [vield, swichVield];					
+						
 						  
 				
 ################ Utilities ################
