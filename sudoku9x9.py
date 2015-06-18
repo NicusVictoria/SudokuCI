@@ -10,6 +10,7 @@
 ##   u is a unit,   e.g. ['A1','B1','C1','D1','E1','F1','G1','H1','I1']
 ##   grid is a grid,e.g. 81 non-blank chars, e.g. starting with '.18...7...
 ##   values is a dict of possible values, e.g. {'A1':'12349', 'A2':'8', ...}
+import random
 
 def cross(A, B):
     "Cross product of elements in A and elements in B."
@@ -19,9 +20,10 @@ digits   = '123456789'
 rows     = 'ABCDEFGHI'
 cols     = digits
 squares  = cross(rows, cols)
+blocks   = [cross(rs, cs) for rs in ('ABC','DEF','GHI') for cs in ('123','456','789')]
 unitlist = ([cross(rows, c) for c in cols] +
             [cross(r, cols) for r in rows] +
-            [cross(rs, cs) for rs in ('ABC','DEF','GHI') for cs in ('123','456','789')])
+            blocks)
 units = dict((s, [u for u in unitlist if s in u])
              for s in squares)
 peers = dict((s, set(sum(units[s],[]))-set([s]))
@@ -182,7 +184,7 @@ def constructBoard(values):
                 for j in range(i, len(block)-1):
                     values[block[j]] = values[block[j]].replace(value,'')
                 values[vield] = value
-                possible = possible.replace(values[r+c],'')
+                possible = possible.replace(value,'')
             else:
                 toDo.add(vield)
         for i in range(0, len(toDo)-1):
@@ -192,20 +194,25 @@ def constructBoard(values):
 def evaluation(values, score, rowsToCheck, colsToCheck):
     for r in rowsToCheck: #check witch number is not there in each row and column and count the length
         possible = digits
-        score[r] += len(possible.replace(values[r+c],'') for c in cols)
+        for c in cols:
+            possible = possible.replace(values[r+c],'')
+        score[r] = len(possible)
     for c in colsToCheck:
         possible = digits
-        score[c] += len(possible.replace(values[r+c],'') for r in rows)
+        for r in rows:
+            possible = possible.replace(values[r+c],'')
+        score[c] = len(possible)
     return score
 
 def scoreTotal(score):
-    return sum(s for s in score)
+    return sum(score.values())
 
 def seekSwitchBlocks(values, board, wrongValues):
-    rndblocks = random.shuffle(blocks)
-    for block in rndblocks:
-        rndvields = random.shuffle(block)
-        for vield in rndvields:
+    swichVield = ''
+    random.shuffle(blocks)
+    for block in blocks:
+        random.shuffle(block)
+        for vield in block:
             if wrongValues[vield] != '':
                 for swichVield in rndvields:
                     if swichVield != vield and board[vield] in values[swichVield]:
@@ -282,10 +289,13 @@ hard1  = '.....6....59.....82....8....45........3........6..3.54...325..6.......
     
 if __name__ == '__main__':
     test()
-    solve_all(from_file("easy50.txt", '========'), "easy", None)
-    solve_all(from_file("top95.txt"), "hard", None)
-    solve_all(from_file("hardest.txt"), "hardest", None)
-    solve_all([random_puzzle() for _ in range(99)], "random", 100.0)
+    solution = localSeurchStart(parse_grid(grid1))
+    display(solution)
+    #print(solved(solution))
+    #solve_all(from_file("easy50.txt", '========'), "easy", None)
+    #solve_all(from_file("top95.txt"), "hard", None)
+    #solve_all(from_file("hardest.txt"), "hardest", None)
+    #solve_all([random_puzzle() for _ in range(99)], "random", 100.0)
 
 ## References used:
 ## http://www.scanraid.com/BasicStrategies.htm
