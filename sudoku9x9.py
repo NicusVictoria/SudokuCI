@@ -135,74 +135,138 @@ def search(values):
 
 ####### Local Search #######
 def localSeurch(values, board, wrongValues, score, totalScore):
-    for _ in range(0,200): #to prevent never ending loops
-        newBoard, check = seekSwitchBlocks(values, board, wrongValues)
-        if check[1]=='':    #if there was no second swich item
-            if all(len(wrongValues[s]) == 0 for s in squares):
+    #print(totalScore)
+    # test = board.copy()
+    # for s in squares:
+    #     if wrongValues[s] == '':
+    #         test[s]= values[s]
+    # display(test)
+    # board = constructBoard(values)
+    # wrongValues = calcWrongValues(values, board, wrongValues, rows, cols)
+    # score = evaluation(values, score, rows, cols)
+    # totalScore = scoreTotal(score)
+    # localSeurch(values, board, wrongValues, score, totalScore)
+
+    for _ in range(0,500): #to prevent never ending loops
+        if totalScore == 0:
                 return board  ## Solved!
-            else:
-                return board ## error no answer
+        newBoard, check = seekSwitchBlocks(board)
+        if check[1]=='':    #if there was no second swich item
+            return board ## error no answer
         rowsToCheck = ''.join(vield[0] for vield in check)
         colsToCheck = ''.join(vield[1] for vield in check)
-        newScore = evaluation(values, score, rowsToCheck, colsToCheck)
+        newScore = evaluation(newBoard, score, rowsToCheck, colsToCheck)
         newTotalScore = scoreTotal(newScore)
         if newTotalScore < totalScore:
-            wrongValues = calcWrongValues(values, newBoard, wrongValues, rowsToCheck, colsToCheck)
+            # wrongValues = calcWrongValues(values, newBoard, wrongValues, rowsToCheck, colsToCheck)
             return localSeurch(values, newBoard, wrongValues, newScore, newTotalScore)
+    board = newBoard
+    totalScore = newTotalScore
+    return board ##out of time range
+
+def randomWalkLocalSearch(values, board, wrongValues, score, totalScore):
+    bestTotalScore = totalScore
+    bestBoard = board.copy()
+    # bestWrongValues = wrongValues.copy()
+    for _ in range(0,5):
+        localSeurch(values, board, wrongValues, score, totalScore)
+        if totalScore == 0:
+            return board  ## Solved!
+        if totalScore < bestTotalScore:
+            bestTotalScore = totalScore
+            bestBoard = board.copy()
+            # bestWrongValues = wrongValues.copy()
+        board = bestBoard.copy()
+        # wrongValues = bestWrongValues.copy()
+        print("bestTotal score ",bestTotalScore)
+
+        for _ in range(0,50):#swicht blocks random
+            board, check = seekSwitchBlocks(board)
+            # rowsToCheck = ''.join(vield[0] for vield in check)
+            # colsToCheck = ''.join(vield[1] for vield in check)
+            # wrongValues = calcWrongValues(values, board, set(), rowsToCheck, colsToCheck)
+        score = evaluation(board, score, rows, cols)
+        totalScore = scoreTotal(score)
+    return board ##out of time range
+
+def randomRestartLocalSearch(values, board, wrongValues, score, totalScore):
+    for _ in range(0,5):
+        localSeurch(values, board, wrongValues, score, totalScore)
+        if totalScore == 0:
+            return board  ## Solved!
+        boards = []
+        for _ in range(0,10):
+            b = constructBoard(values)
+            s = evaluation(b, score, rows, cols)
+            ts = scoreTotal(s)
+            boards.append((ts, b))
+        totalScore, bestboard = min(boards, key = lambda t: t[0])
+        score = evaluation(bestboard, score, rows, cols)
+        print("bestboard score ",totalScore)
     return board ##out of time range
 
 def localSeurchStart(values):
+    if solved(values):
+        return values
     board = constructBoard(values)
     score = dict((s, 9) for s in rows + cols)  # make a dictionary for the score
     score = evaluation(board, score, rows, cols)
-    wrongValues = dict((s, '') for s in squares)  # make a dictionary for the wrongValues
-    wrongValues = calcWrongValues(values, board, wrongValues, rows, cols)
-    return localSeurch(values, board, wrongValues, score, scoreTotal(score))
+    wrongValues = set()  # make a dictionary for the wrongValues (s, '') for s in squares
+    # wrongValues = calcWrongValues(values, board, wrongValues, rows, cols)
+    return randomRestartLocalSearch(values, board, wrongValues, score, scoreTotal(score))
 
 
-def calcWrongValues(values, board, oldWrongValues, rowsToCheck, colsToCheck):
-    wrongValues = oldWrongValues
-    for r in rowsToCheck:  # only check the changed rows and cols
-        for c in cols:
-            s = r + c
-            wrongValues[s] = ''
-            if len(values[s]) > 1:  # if there are no multiple options for a position in cant be wrong
-                if board[s] not in values[s]:  # if the value is not in is's possible values in never van be right
-                    wrongValues[s] = board[s]
-                elif board[s] in (board[peer] for peer in peers[s]):  # if this value also is in it's peers
-                    wrongValues[s] = board[s]
-    for c in colsToCheck:
-        for r in rows:
-            s = r + c
-            if r not in rowsToCheck:
-                wrongValues[s] = ''
-            if len(values[s]) > 1:
-                if board[s] not in values[s]:
-                    wrongValues[s] = board[s]
-                elif board[s] in (board[peer] for peer in peers[s]):
-                    wrongValues[s] = board[s]
-    return wrongValues
+# def calcWrongValues(values, board, wrongValues, rowsToCheck, colsToCheck):
+#     for r in rowsToCheck:  # only check the changed rows and cols
+#         for c in cols:
+#             s = r + c
+#             wrongValues.discard(s)
+#             if len(values[s]) > 1:  # if there are no multiple options for a position in cant be wrong
+#                 if board[s] not in values[s]:  # if the value is not in is's possible values in never van be right
+#                     wrongValues.add(s)
+#                 elif board[s] in (board[peer] for peer in peers[s]):  # if this value also is in it's peers
+#                     wrongValues.add(s)
+#     for c in colsToCheck:
+#         for r in rows:
+#             s = r + c
+#             if r not in rowsToCheck:
+#                 wrongValues.discard(s)
+#             if len(values[s]) > 1:
+#                 if board[s] not in values[s]:
+#                     wrongValues.add(s)
+#                 elif board[s] in (board[peer] for peer in peers[s]):
+#                     wrongValues.add(s)
+#     return wrongValues
 
 
 def constructBoard(values):
     board = values.copy()
     for block in blocks:
-        possible = digits
-        toDo = []
-        list = (range(0, len(block)))
-        for i in range(0, len(block)):  # always place the first of the possible values
-            vield = block[i]
-            if len(board[vield]) > 0:  # if there is nothing possible in should be given the rest value
-                value = board[vield][0]
-                for j in range(i, len(block)):
-                    board[block[j]] = board[block[j]].replace(value, '')
-                board[vield] = value
-                possible = possible.replace(value, '')
-            else:
-                toDo = toDo + [vield]
-        for x in range(0, len(toDo)):
-            board[toDo[x]] = possible[x]
+        vields = dict([s, board[s]] for s in block)
+        toDo = set(s for s in block if len(board[s]) > 1)
+        ans = constuctBlock(vields, toDo, [])
+        for s in block:
+            board[s] = ans[s]
     return board
+
+def constuctBlock(vields, toDo, ans):
+    if len(toDo) == 0:
+        return vields
+    minLengt, shortestVield = min((len(vields[vield]), vield) for vield in toDo)
+    if minLengt == 0:
+        return False
+    rndvalue = list(vields[shortestVield])
+    random.shuffle(rndvalue)
+    for value in rndvalue:
+        newVields = vields.copy()
+        newToDo = toDo.copy()
+        for v in toDo:
+           newVields[v] = newVields[v].replace(value, '')
+        newVields[shortestVield] = value
+        newToDo.discard(shortestVield)
+        ans = constuctBlock(newVields, newToDo, ans)
+        if ans:
+            return ans
 
 
 def evaluation(values, score, rowsToCheck, colsToCheck):
@@ -223,21 +287,46 @@ def scoreTotal(score):
     return sum(score.values())
 
 
-def seekSwitchBlocks(values, board, wrongValues):
-    swichVield = ''
+def seekSwitchBlocks(board):
+    block = random.choice(blocks)
+    vield, switchVield = random.sample(block, 2)
+    for switchVield in block:
+        if switchVield != vield:
+            tmp = board[vield]
+            board[vield] = board[switchVield]
+            board[switchVield] = tmp
+            break
+    return board, [vield, switchVield]
+
+def smartSeekSwitchBlocks(values, board, wrongValues):
+    switchVield = ''
+    switched = ''
     random.shuffle(blocks)
     for block in blocks:
         random.shuffle(block)
         for vield in block:
-            if wrongValues[vield] != '':
-                for swichVield in block:
-                    if swichVield != vield and board[vield] in values[swichVield]:
-                        # can be better by checking if also board[swichVield] in values[vield] but then it can hafe no autput
-                        board[vield] = board[swichVield]
-                        board[swichVield] = wrongValues[vield]
-                        break
-    return board, [vield, swichVield]
-
+            if vield in wrongValues:
+                for switchVield in block:
+                    if switchVield != vield:
+                        bestVield = vield
+                        bestSwitchVield = switchVield
+                        if board[vield] in values[switchVield]:
+                            bestVield = vield
+                            bestSwitchVield = switchVield
+                            if board[switchVield] in values[vield]:
+                                # can be better by checking if also board[swichVield] in values[vield] but then it can hafe no autput
+                                switched = board[vield]
+                                board[vield] = board[switchVield]
+                                board[switchVield] = switched
+                                break
+    if switched == '':
+        try:
+            switched = board[bestVield]
+            board[bestVield] = board[bestSwitchVield]
+            board[bestSwitchVield] = switched
+        except:
+            return
+    return board, [vield, switchVield]
 
 ################ Utilities ################
 
@@ -314,12 +403,13 @@ hard1 = '.....6....59.....82....8....45........3........6..3.54...325..6........
 
 if __name__ == '__main__':
     #test()
-    #solution = localSeurchStart(parse_grid(grid1))
+    #display(parse_grid(hard1))
+    #solution = localSeurchStart(parse_grid(hard1))
     #display(solution)
     solve_all(from_file("easy50.txt", '========'), "easy", None)
     solve_all(from_file("top95.txt"), "hard", None)
-    solve_all(from_file("hardest.txt"), "hardest", None)
-    solve_all([random_puzzle() for _ in range(99)], "random", 100.0)
+    # solve_all(from_file("hardest.txt"), "hardest", None)
+    # solve_all([random_puzzle() for _ in range(99)], "random", 100.0)
 
     ## References used:
     ## http://www.scanraid.com/BasicStrategies.htm
