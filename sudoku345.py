@@ -1,3 +1,5 @@
+import random
+
 grid1  = '003020600900305001001806400008102900700000008006708200002609500800203009005010300'
 grid2  = '4.....8.5.3..........7......2.....6.....8.4......1.......6.3.7.5..2.....1.4......'
 hard1  = '.....6....59.....82....8....45........3........6..3.54...325..6..................'
@@ -181,3 +183,54 @@ def some(seq):
     for e in seq:
         if e: return e
     return False
+
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+def random_puzzle(unitsize):
+    """Make a random puzzle with N or more assignments. Restart on contradictions.
+    Note the resulting puzzle is not guaranteed to be solvable, but empirically
+    about 99.8% of them are solvable. Some have multiple solutions."""
+    if unitsize == 81:
+        rows = rows3
+        cols = cols3
+        N = 17
+        D = 8
+
+    elif unitsize == 256:
+        rows = rows4
+        cols = cols4
+        N = 55
+        D = 15
+
+    elif unitsize == 625:
+        rows = rows5
+        cols = cols5
+        N = 151
+        D = 24
+
+    else:
+        print "Unitsize invalid"
+        return None
+
+    grid = generate_emptygrid(unitsize)
+    units = createunit(grid)
+    peers = dict((s, set(sum(units[s],[]))-set([s]))
+             for s in cross(rows,cols))
+    values = dict((s, cols) for s in cross(rows,cols))
+    for s in shuffled(cross(rows,cols)):
+        if not assign(values, s, random.choice(values[s]), peers, grid):
+            break
+        ds = [values[s] for s in cross(rows,cols) if len(values[s]) == 1]
+        if len(ds) >= N and len(set(ds)) >= D:
+            return ''.join(values[s] if len(values[s])==1 else '.' for s in cross(rows,cols))
+    return random_puzzle(N) ## Give up and make a new puzzle
+
+def shuffled(seq):
+    "Return a randomly shuffled copy of the input sequence."
+    seq = list(seq)
+    random.shuffle(seq)
+    return seq
+
+def generate_emptygrid(unitsize):
+    return '.'*unitsize
+    
