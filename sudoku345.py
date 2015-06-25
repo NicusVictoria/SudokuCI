@@ -1,4 +1,4 @@
-import random
+import random, time
 
 grid1  = '003020600900305001001806400008102900700000008006708200002609500800203009005010300'
 grid2  = '4.....8.5.3..........7......2.....6.....8.4......1.......6.3.7.5..2.....1.4......'
@@ -48,29 +48,98 @@ def createunit(grid):
         return dict((s, [u for u in unitlist if s in u])
              for s in cross(rows5,cols5))
 
-def solve(grid): return display(search(parse_grid(grid), grid), grid)
+def solve(grid): return search(parse_grid(grid), grid)
+
+def solve_all(grids, name='', showif=0.0):
+    """Attempt to solve a sequence of grids. Report results.
+    When showif is a number of seconds, display puzzles that take longer.
+    When showif is None, don't display any puzzles."""
+    
+    
+    def time_solve(grid):
+    
+        if len(grid) == 81:
+            rows = rows3
+            cols = cols3
+
+        if len(grid) == 256:
+            rows = rows4
+            cols = cols4
+
+        if len(grid) == 625:
+            rows = rows5
+            cols = cols5
+    
+        start = time.clock()
+        values = solve(grid)
+        t = time.clock()-start
+        ## Display puzzles that take long enough
+        if showif is not None and t > showif:
+            display(grid_values(grid, cols, rows), grid)
+            if values: display(values,grid)
+            print '(%.2f seconds)\n' % t
+        return (t, solved(values),grid)
+    times, results = zip(*[time_solve(grid) for grid in grids])
+    N = len(grids)
+    if N > 1:
+        print "Solved %d of %d %s puzzles (avg %.2f secs (%d Hz), max %.2f secs)." % (
+            sum(results), N, name, sum(times)/N, N/sum(times), max(times))
+
+def solved(values, grid):
+    "A puzzle is solved if each unit is a permutation of the digits 1 to 9."
+    
+    if len(grid) == 81:
+        rows = rows3
+        cols = cols3
+        unitrows = unitrows3
+        unitcols = unitcols3
+
+    if len(grid) == 256:
+        rows = rows4
+        cols = cols4
+        unitrows = unitrows4
+        unitcols = unitcols4
+
+    if len(grid) == 625:
+        rows = rows5
+        cols = cols5
+        unitrows = unitrows5
+        unitcols = unitcols5
+            
+            
+    unitlist = ([cross(rows, c) for c in cols] +
+            [cross(r, cols) for r in rows] +
+            [cross(rs, cs) for rs in unitrows for cs in unitcols])        
+    
+            
+    def unitsolved(unit): return set(values[s] for s in unit) == set(cols)
+    return values is not False and all(unitsolved(unit) for unit in unitlist)
 
 def parse_grid(grid):
     """Convert grid to a dict of possible values, {square: cols}, or
     return False if a contradiction is detected."""
     ## To start, every square can be any digit; then assign values from the grid.
+    
     if len(grid) == 81:
         print "9x9 grid detected"
         values = dict((s, cols3) for s in cross(rows3,cols3))
         cols = cols3
         rows = rows3
 
-    if len(grid) == 256:
+    elif len(grid) == 256:
         print "16x16 grid detected"
         values = dict((s, cols4) for s in cross(rows4,cols4))
         cols = cols4
         rows = rows4
 
-    if len(grid) == 625:
+    elif len(grid) == 625:
         print "25X25 grid detected"
         values = dict((s, cols5) for s in cross(rows5,cols5))
         cols = cols5
         rows = rows5
+    else:
+        print len(grid)
+        return None
 
     units = createunit(grid)
     peers = dict((s, set(sum(units[s],[]))-set([s]))
@@ -184,8 +253,6 @@ def some(seq):
         if e: return e
     return False
 
-#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
 def random_puzzle(unitsize):
     """Make a random puzzle with N or more assignments. Restart on contradictions.
     Note the resulting puzzle is not guaranteed to be solvable, but empirically
@@ -233,4 +300,16 @@ def shuffled(seq):
 
 def generate_emptygrid(unitsize):
     return '.'*unitsize
+    
+def from_file(filename, sep='\n'):
+    "Parse a file into a list of strings, separated by sep."
+    return file(filename).read().strip().split(sep)
+    
+#if __name__ == '__main__':
+#    solve_all(from_file("easy50.txt", '========'), "easy", None)
+#    solve_all(from_file("top95.txt"), "hard", None)
+#    solve_all(from_file("hardest.txt"), "hardest", None)
+#    solve_all([random_puzzle(81) for _ in range(99)], "random", 100.0)
+#    solve_all([random_puzzle(256) for _ in range(99)], "random", 100.0)
+#    solve_all([random_puzzle(625) for _ in range(99)], "random", 100.0)
     
