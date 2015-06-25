@@ -34,19 +34,21 @@ def createunit(grid):
         return dict((s, [u for u in unitlist if s in u])
              for s in cross(rows3,cols3))
 
-    if len(grid) == 256:
+    elif len(grid) == 256:
         unitlist = ([cross(rows4, c) for c in cols4] +
             [cross(r, cols4) for r in rows4] +
             [cross(rs, cs) for rs in unitrows4 for cs in unitcols4])
         return dict((s, [u for u in unitlist if s in u])
              for s in cross(rows4,cols4))
 
-    if len(grid) == 625:
+    elif len(grid) == 625:
         unitlist = ([cross(rows5, c) for c in cols5] +
             [cross(r, cols5) for r in rows5] +
             [cross(rs, cs) for rs in unitrows5 for cs in unitcols5])
         return dict((s, [u for u in unitlist if s in u])
              for s in cross(rows5,cols5))
+    else:
+        return None
 
 def solve(grid): return search(parse_grid(grid), grid)
 
@@ -55,20 +57,22 @@ def solve_all(grids, name='', showif=0.0):
     When showif is a number of seconds, display puzzles that take longer.
     When showif is None, don't display any puzzles."""
     
-    
+
     def time_solve(grid):
     
         if len(grid) == 81:
             rows = rows3
             cols = cols3
 
-        if len(grid) == 256:
+        elif len(grid) == 256:
             rows = rows4
             cols = cols4
 
-        if len(grid) == 625:
+        elif len(grid) == 625:
             rows = rows5
             cols = cols5
+        else: 
+            print "Invalid Grid at 'solve'"
     
         start = time.clock()
         values = solve(grid)
@@ -78,7 +82,7 @@ def solve_all(grids, name='', showif=0.0):
             display(grid_values(grid, cols, rows), grid)
             if values: display(values,grid)
             print '(%.2f seconds)\n' % t
-        return (t, solved(values),grid)
+        return (t, solved(values,grid))
     times, results = zip(*[time_solve(grid) for grid in grids])
     N = len(grids)
     if N > 1:
@@ -94,18 +98,19 @@ def solved(values, grid):
         unitrows = unitrows3
         unitcols = unitcols3
 
-    if len(grid) == 256:
+    elif len(grid) == 256:
         rows = rows4
         cols = cols4
         unitrows = unitrows4
         unitcols = unitcols4
 
-    if len(grid) == 625:
+    elif len(grid) == 625:
         rows = rows5
         cols = cols5
         unitrows = unitrows5
         unitcols = unitcols5
-            
+    else:
+        return None        
             
     unitlist = ([cross(rows, c) for c in cols] +
             [cross(r, cols) for r in rows] +
@@ -121,23 +126,21 @@ def parse_grid(grid):
     ## To start, every square can be any digit; then assign values from the grid.
     
     if len(grid) == 81:
-        print "9x9 grid detected"
         values = dict((s, cols3) for s in cross(rows3,cols3))
         cols = cols3
         rows = rows3
 
     elif len(grid) == 256:
-        print "16x16 grid detected"
         values = dict((s, cols4) for s in cross(rows4,cols4))
         cols = cols4
         rows = rows4
 
     elif len(grid) == 625:
-        print "25X25 grid detected"
         values = dict((s, cols5) for s in cross(rows5,cols5))
         cols = cols5
         rows = rows5
     else:
+        print "Invalid grid length:",
         print len(grid)
         return None
 
@@ -201,7 +204,7 @@ def display(values, grid):
             if r in 'CF': print '-'*6 + '+' + '-'*7 + '+' + '-'*6
         print
 
-    if len(grid) == 256: 
+    elif len(grid) == 256: 
         for r in rows4:
             for c in cols4:
                 print values[r+c],
@@ -210,14 +213,17 @@ def display(values, grid):
             if r in 'DHL': print '-'*8 + '+' + '-'*9 + '+' + '-'*9 + '+' + '-'*8
         print
 
-    if len(grid) == 625: 
+    elif len(grid) == 625: 
         for r in rows5:
+
             for c in cols5:
                 print values[r+c],
                 if c in '5afk': print '|',
             print
             if r in 'EJOT': print '-'*10 + '+' + '-'*11 + '+' + '-'*11 + '+' + '-'*11 + '+' + '-'*10
         print
+    else:
+        print "Invalid grid at 'display'"
 
 def search(values, grid):
     "Using depth-first search and propagation, try all possible values."
@@ -225,20 +231,22 @@ def search(values, grid):
         rows = rows3
         cols = cols3
 
-    if len(grid) == 256:
+    elif len(grid) == 256:
         rows = rows4
         cols = cols4
 
-    if len(grid) == 625:
+    elif len(grid) == 625:
         rows = rows5
         cols = cols5
+    
+    else: 
+        return None
 
     units = createunit(grid)
     peers = dict((s, set(sum(units[s],[]))-set([s]))
              for s in cross(rows,cols))
     
     if values is False:
-        print "failed."
         return False ## Failed earlier
     if all(len(values[s]) == 1 for s in cross(rows,cols)):
         return values ## Solved!
